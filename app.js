@@ -29,7 +29,7 @@ app.use((req, res, next) => {
 });
 app.use(
     cors({
-        origin: process.env.CORS_PORT,
+        origin: process.env.CORS_ORIGIN,
         credentials: true,
     })
 );

@@ -42,16 +42,16 @@ export const loginUser = async (req, res) => {
         });
         res.cookie("jwt", token, {
             httpOnly: true,
-            sameSite: "none",
-            secure: true,
-            maxAge: 24 * 60 * 60 * 1000,
-            domain: process.env.DOMAIN,
+            sameSite: process.env.NODE_ENV === "production",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 48 * 60 * 60 * 1000,
+            domain: process.env.COOKIES_DOMAIN,
         })
             .cookie("username", user.Name, {
-                sameSite: "none",
-                secure: true,
+                sameSite: process.env.NODE_ENV === "production",
+                secure: process.env.NODE_ENV === "production",
                 maxAge: 24 * 60 * 60 * 1000,
-                domain: process.env.DOMAIN,
+                domain: process.env.COOKIES_DOMAIN,
             })
             .status(200)
             .send("user logged in");
