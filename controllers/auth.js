@@ -4,6 +4,8 @@ import sql from "../config/db.js";
 import log from "../config/logger.js";
 import sendError from "../config/sendError.js";
 
+dotenv.config();
+
 export const registerUser = async (req, res) => {
     if (!req.body.username) return sendError(res, 400, "Falta usuario");
     if (!req.body.password) return sendError(res, 400, "Falta contrasela");
@@ -17,8 +19,8 @@ export const registerUser = async (req, res) => {
         log.silly("user registered");
         loginUser(req, res);
     } catch (err) {
-        console.log(err)
-        if(err.constraint_name === "unique_email") return sendError(res, 400, "Email already in use")
+        console.log(err);
+        if (err.constraint_name === "unique_email") return sendError(res, 400, "Email already in use");
         sendError(res, 500, err);
     }
 };
@@ -39,12 +41,20 @@ export const loginUser = async (req, res) => {
         });
         res.cookie("jwt", token, {
             httpOnly: true,
-            sameSite: "strict",
+            sameSite: "none",
+            secure: true,
             maxAge: 24 * 60 * 60 * 1000,
+            domain: process.env.DOMAIN,
         })
-            .cookie("username", user.Name, { sameSite: "strict", maxAge: 24 * 60 * 60 * 1000 })
+            .cookie("username", user.Name, {
+                sameSite: "none",
+                secure: true,
+                maxAge: 24 * 60 * 60 * 1000,
+                domain: process.env.DOMAIN,
+            })
             .status(200)
             .send("user logged in");
+
         log.silly("user logged in");
     } catch (err) {
         sendError(res, 500, err);
