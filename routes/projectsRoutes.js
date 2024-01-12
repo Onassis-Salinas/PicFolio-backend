@@ -1,5 +1,5 @@
 import express from "express";
-import { uploadProjectImage, uploadProject, getProject, getPopularProjects, searchProjects } from "../controllers/projects.js";
+import { uploadProjectImage, uploadProject, getProject, getPopularProjects, searchProjects, uploadProjectImages } from "../controllers/projects.js";
 import upload from "../middleware/uploadImages.js";
 
 const router = express.Router();
@@ -22,7 +22,23 @@ const router = express.Router();
  *       in: query
  *     - name: IMAGE
  */
-router.post("/singleimage", upload.single("file"), uploadProjectImage);
+router.post("/singleimage", upload.array("files", 20), uploadProjectImage);
+
+/**
+ * @openapi
+ * /projects/images:
+ *   post:
+ *     tags:
+ *     - Projects
+ *     responses:
+ *       200:
+ *         description: returns a completed message
+ *     parameters:
+ *     - name: metadata
+ *     - name: files
+ *       in: form
+ */
+router.post("/images", upload.array("files", 20), uploadProjectImages);
 
 /**
  * @openapi

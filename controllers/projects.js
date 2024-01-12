@@ -33,6 +33,31 @@ export const uploadProjectImage = async (req, res) => {
     }
 };
 
+export const uploadProjectImages = async (req, res) => {
+    if (!req.files) return sendError(res, 400, "Faltan las imagenes");
+    if (!req.body.metadata) return sendError(res, 400, "Falta la informacion");
+
+    const bucket = admin.storage().bucket();
+    const metadata = JSON.parse(req.body.metadata);
+
+    req.files.forEach((file, i) => {
+        const fileName = Date.now() + "." + file.originalname.split(".")[1];
+        const firebaseFile = bucket.file(fileName);
+        const stream = firebaseFile.createWriteStream();
+
+        stream.on("finish", async () => {
+            const imageUrl = process.env.FIREBASE_BASE + fileName;
+            console.log(typeof metadata);
+            console.log(req.body.metadata);
+            const [image] = await sql`Insert into "Images" ("Link", "Title", "ProjectId") values (${imageUrl}, ${metadata[i].title ? metadata[i].title : ""}, ${metadata[i].projectId}) returning "id", "Link"`;
+            if (metadata[i].defaultImage) await sql`update "Projects" set "DefaultImageId"=${image.id} where "id"=${metadata[i].projectId} `;
+
+            if (i === metadata.length - 1) res.send("Uploaded");
+        });
+        stream.end(file.buffer);
+    });
+};
+
 export const uploadProject = async (req, res) => {
     if (!req.body.title) return sendError(res, 400, "Falta el titulo");
     if (!req.user) return sendError(res, 401, "No esta iniciado sesion");
@@ -44,6 +69,7 @@ export const uploadProject = async (req, res) => {
         log.silly("Project created");
         res.status(200).send({ id: project.id });
     } catch (err) {
+        console.log(err);
         sendError(res, 500, err);
     }
 };
