@@ -36,7 +36,7 @@ router.post("/singleimage", upload.single("file"), uploadProjectImage);
  *     parameters:
  *     - name: title
  *     - name: layoutId
- * 
+ *
  */
 router.post("/create", uploadProject);
 
@@ -52,7 +52,7 @@ router.post("/create", uploadProject);
  *     parameters:
  *     - name: projectId
  *       in: query
-*/
+ */
 router.get("/", getProject);
 
 /**
@@ -65,7 +65,7 @@ router.get("/", getProject);
  *       200:
  *         description: returns tthe popular projects
  */
-router.get("/popular", getPopularProjects)
+router.get("/popular", getPopularProjects);
 
 /**
  * @openapi
@@ -79,7 +79,6 @@ router.get("/popular", getPopularProjects)
  *     parameters:
  *     - name: value
  */
-router.post("/search", searchProjects)
-
+router.post("/search", searchProjects);
 
 export default router;

@@ -16,6 +16,13 @@ import usersRoutes from "./routes/usersRoutes.js";
 import projectsRoutes from "./routes/projectsRoutes.js";
 import swaggerDocs from "./config/swagger.js";
 
+import admin from "firebase-admin";
+import credentials from "./config/credentials.json" assert { type: "json" };
+admin.initializeApp({
+    credential: admin.credential.cert(credentials),
+    storageBucket: "gs://picfolio-390ab.appspot.com",
+});
+
 dotenv.config();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

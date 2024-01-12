@@ -1,17 +1,32 @@
+import dotenv from "dotenv";
 import sql from "../config/db.js";
 import log from "../config/logger.js";
 import sendError from "../config/sendError.js";
+import admin from "firebase-admin";
+
+dotenv.config();
 
 export const uploadProjectImage = async (req, res) => {
     if (!req.query.projectId) return sendError(res, 400, "Falta el project ID");
     if (!req.query.title) return sendError(res, 400, "Falta el titulo");
-    if (!req.filename) return sendError(res, 400, "Falta la imagen");
+    if (!req.file) return sendError(res, 400, "Falta la imagen");
+
+    const bucket = admin.storage().bucket();
 
     try {
-        const [image] = await sql`Insert into "Images" ("Link", "Title", "ProjectId") values (${req.filename}, ${req.query.title}, ${req.query.projectId}) returning "id", "Link"`;
-        console.log(image);
-        if (req.query.default) await sql`update "Projects" set "DefaultImageId"=${image.id} where "id"=${req.query.projectId} `;
-        res.send(image);
+        const fileName = Date.now() + "." + req.file.originalname.split(".")[1];
+        const file = bucket.file(fileName);
+        const stream = file.createWriteStream();
+        stream.on("finish", async () => {
+            const [metadata] = await file.getMetadata();
+
+            const imageUrl = process.env.FIREBASE_BASE + fileName;
+            const [image] = await sql`Insert into "Images" ("Link", "Title", "ProjectId") values (${imageUrl}, ${req.query.title}, ${req.query.projectId}) returning "id", "Link"`;
+            console.log(image);
+            if (req.query.default) await sql`update "Projects" set "DefaultImageId"=${image.id} where "id"=${req.query.projectId} `;
+            res.send(image);
+        });
+        stream.end(req.file.buffer);
     } catch (err) {
         console.log(err);
         sendError(res, 500, err);
